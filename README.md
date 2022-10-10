@@ -1,4 +1,4 @@
-# mind-counsel
+# mind-counsel(2020)
 Spring Boot, Java, JSP, Mybatis, PostgreSQL
 
 ㅇ 심리상담 서비스 Application
