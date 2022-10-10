@@ -1,7 +1,7 @@
 # mind-counsel
-Spring Boot, Java, JSP
+Spring Boot, Java, JSP, Mybatis, PostgreSQL
 
-ㅇ 상담 서비스 Application
+ㅇ 심리상담 서비스 Application
 
 ㅇ 주요기능
   - 게시판 
