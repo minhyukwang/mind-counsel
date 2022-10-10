@@ -1,8 +1,8 @@
-# mind-counsel(2020)
+# mind-counsel
 Spring Boot, Java, JSP, Mybatis, PostgreSQL
 
 ㅇ 심리상담 서비스 Application
-
+ㅇ 개발년도 : 2020
 ㅇ 주요기능
   - 게시판 
   - 타임라인
