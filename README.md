@@ -2,6 +2,7 @@
 Spring Boot, Java, JSP
 
 ㅇ 상담 서비스 Application
+
 ㅇ 주요기능
   - 게시판 
   - 타임라인
