@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "HTTP://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+
+	<typeAliases>
+		<package name="com.minhyuk.member.vo" />
+		<package name="com.minhyuk.app.vo" />
+	</typeAliases>
+
+	<mappers>
+		<mapper resource="com/minhyuk/member/mapper/Member.xml" />
+		<mapper resource="com/minhyuk/app/mapper/IssueBoard.xml" />
+		<mapper resource="com/minhyuk/app/mapper/TimelineBoard.xml" />
+		<mapper resource="com/minhyuk/app/mapper/Note.xml" />
+		<mapper resource="com/minhyuk/app/mapper/Counsel.xml" />
+		<mapper resource="com/minhyuk/app/mapper/Chat.xml" />
+		<mapper resource="com/minhyuk/member/mapper/Friends.xml" />
+	</mappers>
+
+
+
+
+</configuration>
+
+
+

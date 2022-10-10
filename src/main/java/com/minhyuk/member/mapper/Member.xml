@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Member">
+
+	<select id="Member.selectMember" parameterType="String" resultType="MemberVO">
+		SELECT *
+		FROM   app.mem_info
+		WHERE  1 =1
+		AND   mem_id = #{mem_id}
+	</select>
+
+	<select id="Member.selectCounselerList" resultType="MemberVO">
+		SELECT *
+		FROM   app.mem_info
+		WHERE  1=1
+		AND auth LIKE 'M%'
+		ORDER  BY auth;
+	</select>
+
+	<select id="Member.login" parameterType="MemberVO" resultType="MemberVO">
+		SELECT * FROM APP.MEM_INFO
+		WHERE MEM_ID = #{mem_id}
+		AND MEM_PWD = #{mem_pwd}
+	</select>
+
+	<update id="Member.keepLogin">
+		UPDATE APP.MEM_INFO
+		SET SESSION_KEY = #{sessionId}, SESSION_LIMIT = #{next}
+		WHERE MEM_ID = #{mem_id}
+	</update>
+
+	<insert id="Member.insert" parameterType="MemberVO">
+		INSERT INTO APP.MEM_INFO(
+			MEM_ID,
+			CREATED_ID,
+			CREATED_TIMESTAMP,
+			LAST_UP_ID,
+			LAST_UP_TIMESTAMP,
+			LOGIN_CD,
+			MEM_PWD,
+			MEM_NAME,
+			MEM_NICK,
+			MEM_EMAIL,
+			MEM_GENDER,
+			AUTH
+		) VALUES (
+			#{mem_id},
+			#{mem_id},
+			current_timestamp(0),
+			#{mem_id},
+			current_timestamp(0),
+			'A',
+			#{mem_pwd},
+			'',
+			#{mem_nick},
+			#{mem_email},
+			'',
+			'G'
+		)
+	</insert>
+
+	<select id="Member.checkID" parameterType="String" resultType="Integer">
+		SELECT COUNT(*) FROM APP.MEM_INFO
+		WHERE MEM_ID = #{mem_id}
+	</select>
+
+	<!-- 아이디찾기 -->
+	<select id="Member.getID" parameterType="String" resultType="String">
+		SELECT MEM_ID FROM APP.MEM_INFO
+		WHERE MEM_EMAIL = #{mem_email}
+	</select>
+
+	<!-- 임시비밀번호(비밀번호찾기)로 Update -->
+	<update id="Member.changePwd" parameterType="String">
+		UPDATE APP.MEM_INFO
+		SET MEM_PWD = #{mem_pwd}
+		WHERE MEM_ID = #{mem_id}
+	</update>
+
+	<!-- 멤버 사진  업데이트 Update -->
+	<update id="Member.updateMemPic" parameterType="String">
+		UPDATE APP.MEM_INFO
+		SET MEM_PIC = #{mem_pic}
+		WHERE MEM_ID = #{mem_id}
+	</update>
+
+	<update id="Member.updateMyInfo" parameterType="MemberVO">
+		UPDATE APP.MEM_INFO
+		SET MEM_NAME = #{mem_name},
+			MEM_NICK = #{mem_nick},
+			MEM_PHONE = #{mem_phone},
+			MEM_EMAIL = #{mem_email},
+			MEM_GENDER = #{mem_gender},
+			MEM_DATE = #{mem_date},
+			MEM_INTRO = #{mem_intro}
+		WHERE MEM_ID = #{mem_id}
+	</update>
+
+	<select id="Member.checkMember" parameterType="String" resultType="MemberVO">
+		SELECT * FROM APP.MEM_INFO
+		WHERE MEM_ID = #{mem_id}
+	</select>
+
+
+<!--
+
+
+
+
+
+
+
+	<update id="Member.changePic">
+		UPDATE TB_MEMBER
+		SET MEM_PIC = #{mem_pic}
+		WHERE MEM_SEQ = #{mem_seq}
+	</update>
+
+
+
+
+	<select id="Member.recommend" parameterType="Integer" resultType="MemberVO">
+		SELECT * FROM TB_MEMBER
+		WHERE MEM_SEQ != #{mem_seq}
+		AND MEM_SEQ NOT IN(SELECT FOLLOWING FROM TB_FOLLOW WHERE FOLLOWER = #{mem_seq})
+		AND MEM_SEQ NOT IN(SELECT BLOCK FROM TB_BLOCK WHERE MEM_SEQ = #{mem_seq})
+		AND MEM_SEQ NOT IN(SELECT MEM_SEQ FROM TB_BLOCK WHERE BLOCK = #{mem_seq})
+		ORDER BY RAND()
+		LIMIT 5
+	</select>
+
+	<update id="Member.updateFollower">
+		UPDATE TB_MEMBER
+		SET FOLLOWER = FOLLOWER + #{amount}
+		WHERE MEM_SEQ = #{mem_seq}
+	</update>
+
+	<update id="Member.updateFollowing">
+		UPDATE TB_MEMBER
+		SET FOLLOWING = FOLLOWING + #{amount}
+		WHERE MEM_SEQ = #{mem_seq}
+	</update>
+
+	<select id="Member.getFollower" parameterType="Integer" resultType="String">
+		SELECT FOLLOWER FROM TB_MEMBER
+		WHERE MEM_SEQ = #{mem_seq}
+	</select>
+
+	<select id="Member.getFollowing" parameterType="Integer" resultType="String">
+		SELECT FOLLOWING FROM TB_MEMBER
+		WHERE MEM_SEQ = #{mem_seq}
+	</select>
+
+
+
+	<update id="Member.changePwd" parameterType="String">
+		UPDATE TB_MEMBER
+		SET MEM_PWD = #{mem_pwd}
+		WHERE MEM_ID = #{mem_id}
+	</update>
+
+		<select id="Member.getView" parameterType="String" resultType="MemberVO">
+		SELECT * FROM APP.MEM_INFO
+		WHERE MEM_ID = #{mem_id}
+	</select>
+
+
+ -->
+
+
+</mapper>

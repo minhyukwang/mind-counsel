@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Counsel">
+
+	<select id="Counsel.selectChatSeq" parameterType="int" resultType="int">
+		<![CDATA[
+			SELECT Coalesce(chat_seq, 0) AS chat_seq
+			FROM   app.cons_mgt
+			where cons_seq =  #{cons_seq};
+		]]>
+	</select>
+
+
+	<select id="Counsel.selectCounselCourse"  parameterType="String"  resultType="CounselCourseVO">
+		SELECT *
+		FROM MASTER.CONS_COURSE
+		WHERE 1=1
+		AND cons_course_id = #{cons_course_id};
+	</select>
+
+	<select id="Counsel.selectCourseList"   resultType="CounselCourseVO">
+		SELECT *
+		FROM MASTER.CONS_COURSE
+		WHERE 1=1
+		ORDER BY CONS_COURSE_ID;
+	</select>
+
+
+	<select id="Counsel.selectCounselList"  parameterType="map" resultType="CounselVO">
+	<![CDATA[
+		WITH cons_mgt AS
+		(
+                SELECT          cons.*,
+                                course.cons_course_nm,
+                                course.price,
+                                course.total_cons_num
+                FROM            app.cons_mgt cons
+                left outer join master.cons_course course
+                ON              cons.cons_course_id = course.cons_course_id)
+		SELECT   cons2.*,
+		         mem.mem_id,
+		         mem.mem_name,
+		         mem.mem_nick,
+		         mem.mem_pic,
+				 (SELECT (EXTRACT(EPOCH FROM current_timestamp(0) - cons2.cons_timestamp)/60)::Integer) AS timeGap
+		from     cons_mgt cons2,
+		         app.mem_info mem
+		WHERE    cons2.mem_id = mem.mem_id
+	]]>
+		<if test="auth != 'A'.toString()">
+			<if test="auth.substring (0,1) != 'M'.toString()">
+				and mem.mem_id = #{mem_id}
+			</if>
+		</if>
+		<if test="auth.substring (0,1) == 'M'.toString()">
+				and cons2.created_id = #{mem_id}
+		</if>
+		order by cons2.created_timestamp desc, cons2.cons_num desc
+	</select>
+
+	<update id="Counsel.updateConsCompYn" parameterType="int">
+		<![CDATA[
+		UPDATE app.cons_mgt
+		SET   cons_comp_yn = 'Y'
+        WHERE cons_seq = #{cons_seq}
+		]]>
+	</update>
+
+	<update id="Counsel.updateChatSeq" parameterType="CounselVO">
+		<![CDATA[
+		UPDATE app.cons_mgt
+		SET   chat_seq = #{chat_seq}
+        WHERE cons_seq = #{cons_seq}
+		]]>
+	</update>
+
+
+	<select id="Counsel.selectCounsel"  resultType="int">
+		<![CDATA[
+			SELECT count(*)
+			FROM app.cons_mgt
+			where mem_id =  #{mem_id};
+		]]>
+	</select>
+	<insert id="Counsel.insertCounselPlan" parameterType="HashMap">
+		<![CDATA[
+			INSERT INTO app.cons_mgt
+			            (mem_id,
+			             created_id,
+			             created_timestamp,
+			             last_up_id,
+			             last_up_timestamp,
+			             pay_yn,
+			             cons_comp_yn,
+			             cons_reg_yn)
+			VALUES      (#{mem_id},
+			             #{created_id},
+			             current_timestamp(0),
+			             #{mem_id},
+			             current_timestamp(0),
+			             'N',
+			             'N',
+			             'N');
+		]]>
+	</insert>
+
+	<insert id="Counsel.insertCounsel" parameterType="CounselVO">
+			INSERT INTO app.cons_mgt
+			            (mem_id,
+			             created_id,
+			             created_timestamp,
+			             last_up_id,
+			             last_up_timestamp,
+			             cons_course_id,
+			             cons_num,
+			             pay_yn,
+			             cons_comp_yn,
+			             cons_reg_yn
+			             <if test="cons_pay_seq != ''">
+			             ,cons_pay_seq
+						</if>
+			             )
+			VALUES      (#{mem_id},
+			             #{created_id},
+			             current_timestamp(0),
+			             #{last_up_id},
+			             current_timestamp(0),
+			             #{cons_course_id},
+			             #{cons_num},
+			             'N',
+			             'N',
+			             'Y'
+			             <if test="cons_pay_seq != ''">
+			             ,#{cons_pay_seq}
+						</if>
+			             );
+	</insert>
+
+	<update id="Counsel.updateCounsel" parameterType="CounselVO">
+			   UPDATE  app.cons_mgt
+				  SET  last_up_id = #{last_up_id},
+				<if test="cons_course_id != null">
+				  	   cons_course_id = #{cons_course_id},
+				</if>
+				<if test="cons_timestamp != ''">
+				  	   cons_timestamp = to_timestamp(#{cons_timestamp}, 'YYYY-MM-DD HH24:MI'),
+				</if>
+				<if test="cons_num != ''">
+				       cons_num = #{cons_num},
+				</if>
+				       chat_seq = #{chat_seq},
+				       cons_reg_yn='Y',
+				<if test="cons_pay_seq != ''">
+				       cons_pay_seq = #{cons_pay_seq},
+				</if>
+				last_up_timestamp = current_timestamp(0)
+				WHERE  cons_seq = #{cons_seq};
+	</update>
+
+	<select id="Counsel.selectSelfCheck"  parameterType="String" resultType="SelfCheckVO">
+		<![CDATA[
+		SELECT check_id,
+		       check_name,
+		       appr1,
+		       appr2,
+		       appr3,
+		       appr4,
+		       appr5,
+		       appr_contents1,
+		       appr_contents2,
+		       appr_contents3,
+		       appr_contents4,
+		       appr_contents5,
+		       check_explain
+		FROM   master.self_check
+		WHERE  check_id = #{checkId}
+		]]>
+	</select>
+
+	<select id="Counsel.selectSelfCheckAnsList"  parameterType="String" resultType="SelfCheckAnsVO">
+		<![CDATA[
+		SELECT check_id,
+		       qu,
+		       ans1,
+		       ans2,
+		       ans3,
+		       ans4,
+		       ans5,
+		       ans6,
+		       ans7,
+		       ans8,
+		       ans9,
+		       ans10
+		FROM   master.self_check_ans
+		WHERE  check_id = #{checkId}
+		ORDER  BY qu
+		]]>
+	</select>
+
+	<select id="Counsel.selectSelfCheckQuList"  parameterType="String" resultType="SelfCheckQuVO">
+		<![CDATA[
+		SELECT check_id,
+		       qu_seq,
+		       qu
+		FROM   master.self_check_qu
+		WHERE  check_id = #{checkId}
+		ORDER  BY qu_seq
+		]]>
+	</select>
+
+	<insert id="Counsel.insertSelfCheckRe" parameterType="SelfCheckReVO">
+		<![CDATA[
+		INSERT INTO app.self_check_re
+		            (check_id,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             re1,
+		             re2,
+		             re3,
+		             re4,
+		             re5,
+		             re6,
+		             re7,
+		             re8,
+		             re9,
+		             re10,
+		             re11,
+		             re12,
+		             re13,
+		             re14,
+		             re15,
+		             re16,
+		             re17,
+		             re18,
+		             re19,
+		             re20,
+		             re21,
+		             re22,
+		             re23,
+		             re24,
+		             re25,
+		             re26,
+		             re27,
+		             re28,
+		             re29,
+		             re30,
+		             re31,
+		             re32,
+		             re33,
+		             re34,
+		             re35,
+		             re36,
+		             re37,
+		             re38,
+		             re39,
+		             re40,
+		             re_score,
+		             mem_id)
+		VALUES      (#{check_id},
+		             #{created_id},
+		             current_timestamp(0),
+		             #{last_up_id},
+		             current_timestamp(0),
+		             #{re1},
+		             #{re2},
+		             #{re3},
+		             #{re4},
+		             #{re5},
+		             #{re6},
+		             #{re7},
+		             #{re8},
+		             #{re9},
+		             #{re10},
+		             #{re11},
+		             #{re12},
+		             #{re13},
+		             #{re14},
+		             #{re15},
+		             #{re16},
+		             #{re17},
+		             #{re18},
+		             #{re19},
+		             #{re20},
+		             #{re21},
+		             #{re22},
+		             #{re23},
+		             #{re24},
+		             #{re25},
+		             #{re26},
+		             #{re27},
+		             #{re28},
+		             #{re29},
+		             #{re30},
+		             #{re31},
+		             #{re32},
+		             #{re33},
+		             #{re34},
+		             #{re35},
+		             #{re36},
+		             #{re37},
+		             #{re38},
+		             #{re39},
+		             #{re40},
+		             #{re_score},
+		             #{mem_id});
+		]]>
+	</insert>
+
+	<select id="Counsel.selectSelfCheckAppr"  parameterType="String" resultType="SelfCheckVO">
+		<![CDATA[
+		SELECT check_id,
+		       check_name,
+		       appr1,
+		       appr2,
+		       appr3,
+		       appr4,
+		       appr5,
+		       appr_contents1,
+		       appr_contents2,
+		       appr_contents3,
+		       appr_contents4,
+		       appr_contents5,
+		       check_explain
+		FROM   master.self_check
+		WHERE  check_id = #{check_id}
+		]]>
+	</select>
+
+	<insert id="Counsel.insertCounselPayInfo" parameterType="PayInfoVO">
+		<![CDATA[
+		INSERT INTO system.pay_info
+            (created_id,
+             created_timestamp,
+             last_up_id,
+             last_up_timestamp,
+             mem_id,
+             paid_amount,
+             verif_comp_yn,
+             manager_id)
+VALUES      (#{manager_id},
+             current_timestamp(0),
+             #{manager_id},
+             current_timestamp(0),
+             #{mem_id},
+             #{paid_amount},
+             'N',
+             #{manager_id});
+		]]>
+	</insert>
+
+	<insert id="Counsel.insertSuccessNotePay" parameterType="PayInfoVO">
+		<![CDATA[
+		INSERT INTO system.pay_info
+            (created_id,
+             created_timestamp,
+             last_up_id,
+             last_up_timestamp,
+             mem_id,
+             pg,
+             pay_method,
+             imp_uid,
+             merchant_uid,
+             paid_amount,
+             apply_num,
+             verif_comp_yn,
+             manager_id)
+VALUES      (#{mem_id},
+             current_timestamp(0),
+             #{mem_id},
+             current_timestamp(0),
+             #{mem_id},
+             #{pg},
+             #{pay_method},
+             #{imp_uid},
+             #{merchant_uid},
+             #{paid_amount},
+             #{apply_num},
+             'N',
+             #{manager_id});
+		]]>
+	</insert>
+
+	<select id="Counsel.selectCounselPaySeq"  parameterType="String" resultType="int">
+		<![CDATA[
+		SELECT pay_seq
+		FROM   system.pay_info
+		WHERE  mem_id = #{mem_id}
+		       AND imp_uid IS NULL
+		ORDER  BY pay_seq DESC
+		LIMIT  1
+		]]>
+	</select>
+
+	<select id="Counsel.selectCounselPayInfo"  parameterType="map" resultType="PayInfoVO">
+		<![CDATA[
+	SELECT pay_seq,
+	       created_id,
+	       created_timestamp,
+	       last_up_id,
+	       last_up_timestamp,
+	       data_end_id,
+	       data_end_timestamp,
+	       mem_id,
+	       pg,
+	       pay_method,
+	       imp_uid,
+	       merchant_uid,
+	       paid_amount,
+	       apply_num,
+	       verif_comp_yn,
+	       manager_id,
+	       refund_yn
+	FROM   system.pay_info
+	WHERE  1 = 1
+	       AND pay_seq = #{cons_pay_seq}
+
+	LIMIT  1
+		]]>
+	</select>
+    <!-- 	   AND mem_id = #{mem_id}  -->
+	<update id="Counsel.updateSuccessCounselPay" parameterType="PayInfoVO">
+		UPDATE system.pay_info
+		SET    last_up_id = #{mem_id},
+		       last_up_timestamp = current_timestamp(0),
+		       pg = #{pg},
+		       pay_method = #{pay_method},
+		       imp_uid = #{imp_uid},
+		       merchant_uid = #{merchant_uid},
+		       apply_num = #{apply_num}
+		WHERE  1 = 1
+		       AND pay_seq = #{pay_seq}
+		       AND mem_id = #{mem_id}
+	</update>
+
+	<update id="Counsel.updateSuccessCounsMgt" parameterType="PayInfoVO">
+		UPDATE app.cons_mgt
+		SET    last_up_id = #{mem_id},
+		       last_up_timestamp = current_timestamp(0),
+		       pay_yn = 'Y'
+		WHERE  1 = 1
+		       AND mem_id = #{mem_id}
+		       AND cons_pay_seq = #{pay_seq}
+	</update>
+
+	<update id="Counsel.updateRefundPayInfo" parameterType="map">
+		UPDATE system.pay_info
+		SET    last_up_id= #{mem_id},
+		       last_up_timestamp= current_timestamp(0),
+		       refund_yn= 'Y'
+		WHERE  pay_seq = #{pay_seq}
+	</update>
+
+	<update id="Counsel.updateRefundCounsel" parameterType="map">
+		UPDATE app.cons_mgt
+		SET    last_up_id = #{mem_id},
+		       last_up_timestamp = current_timestamp(0),
+		       refund_yn = 'Y'
+		WHERE  cons_pay_seq = #{pay_seq}
+	</update>
+
+	<select id="Counsel.selectRefundCounselList"  parameterType="int" resultType="CounselVO">
+		<![CDATA[
+		SELECT *
+		FROM   app.cons_mgt
+		WHERE  cons_pay_seq = #{pay_seq}
+		       AND pay_yn = 'Y'
+		       AND cons_comp_yn = 'N'
+		]]>
+	</select>
+</mapper>

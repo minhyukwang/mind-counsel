@@ -1,0 +1,22 @@
+@charset "UTF-8";
+#tabs-titles{
+    float:left;
+    margin-right:10px;
+}
+#tabs-titles li{
+    cursor:pointer;
+}
+#tabs-titles li.current{
+    font-weight:bolder;
+}
+#tabs-contents{
+ /*    background:#F2F2F2; */
+    margin-left:100px;
+    padding:5px;
+}
+#tabs-contents li{
+    display:none;
+}
+#tabs-contents li:first-child{
+    display:block; /* first one content displayed by default */
+}

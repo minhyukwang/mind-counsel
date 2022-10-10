@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Friends">
+
+	<select id="Friends.checkFollow" parameterType="HashMap" resultType="int">
+		SELECT Count(*)
+		FROM   app.friend_info
+		WHERE  1 = 1
+		AND    mem_id = #{mem_id}
+		AND    friend_id = #{friend_id}
+		AND    block_yn = 'N'
+	</select>
+
+	<select id="Friends.checkBlock" parameterType="HashMap" resultType="int">
+		SELECT Count(*)
+		FROM   app.friend_info
+		WHERE  1 = 1
+		AND    mem_id = #{mem_id}
+		AND    friend_id = #{friend_id}
+		AND    block_yn = 'Y'
+	</select>
+
+	<delete id="Friends.deleteFollow" parameterType="HashMap">
+		DELETE FROM app.friend_info
+		WHERE  mem_id = #{mem_id}
+	    AND friend_id = #{friend_id}
+	</delete>
+
+	<select id="Friends.selectFollowerList" parameterType="String" resultType="FriendsVO">
+		SELECT MEM.mem_nick,
+		       FRI.mem_id,
+		       FRI.friend_id,
+		       MEM.mem_pic
+		FROM   app.friend_info FRI,
+		       app.mem_info MEM
+		WHERE  FRI.mem_id = MEM.mem_id
+		       AND FRI.friend_id = #{memId}
+		       AND FRI.block_yn = 'N'
+		       AND FRI.push_yn = 'N'
+	</select>
+
+	<select id="Friends.selectFollowingList" parameterType="String" resultType="FriendsVO">
+		SELECT MEM.mem_nick,
+		       FRI.friend_id as "mem_id",
+		       MEM.mem_pic
+		FROM   app.friend_info FRI,
+		       app.mem_info MEM
+		WHERE  FRI.friend_id = MEM.mem_id
+		       AND FRI.mem_id = #{memId}
+		       AND FRI.block_yn = 'N'
+		       AND FRI.push_yn = 'N'
+	</select>
+
+	<select id="Friends.selectblockList" parameterType="String" resultType="FriendsVO">
+		SELECT MEM.mem_nick,
+		       FRI.friend_id as "mem_id",
+		       MEM.mem_pic
+		FROM   app.friend_info FRI,
+		       app.mem_info MEM
+		WHERE  FRI.friend_id = MEM.mem_id
+		       AND FRI.mem_id = #{memId}
+		       AND FRI.block_yn = 'Y'
+	</select>
+
+	<insert id="Friends.insertFollow" parameterType="HashMap">
+		INSERT INTO app.friend_info
+		            (mem_id,
+		             friend_id,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             data_end_id,
+		             data_end_timestamp,
+		             block_yn,
+		             push_yn)
+		VALUES      (#{mem_id},
+		             #{friend_id},
+		             #{mem_id},
+		             current_timestamp(0),
+		             #{mem_id},
+		             current_timestamp(0),
+		             null,
+		             null,
+		             'N',
+		             'N');
+	</insert>
+
+	<insert id="Friends.insertblock" parameterType="HashMap">
+		INSERT INTO app.friend_info
+		            (mem_id,
+		             friend_id,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             data_end_id,
+		             data_end_timestamp,
+		             block_yn,
+		             push_yn)
+		VALUES      (#{mem_id},
+		             #{friend_id},
+		             #{mem_id},
+		             current_timestamp(0),
+		             #{mem_id},
+		             current_timestamp(0),
+		             null,
+		             null,
+		             'Y',
+		             'N');
+	</insert>
+
+	<update id="Friends.updateblock" parameterType="HashMap">
+		<![CDATA[
+		UPDATE app.friend_info
+		SET   block_yn = 'N'
+        WHERE mem_id = #{mem_id}
+        AND friend_id = #{friend_id};
+		]]>
+	</update>
+
+</mapper>

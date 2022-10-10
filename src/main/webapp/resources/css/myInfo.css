@@ -1,0 +1,209 @@
+@charset "UTF-8";
+.user_info_wrap .user_profile {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	overflow: hidden;
+	margin-right: 10px;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center center
+}
+
+.user_box {
+	width: 70%;
+	position: relative;
+	left:10em;
+	background-color: #fff;
+	overflow: hidden;
+	border-radius: 10px;
+	height: 210px;
+}
+
+.edit_box{
+	width: 50%;
+	position: relative;
+	left:18em;
+	background-color: #fff;
+	overflow: hidden;
+	border-radius: 10px;
+	height: 400px;
+}
+
+._user_img:hover ._user_background {
+	opacity: 1
+}
+
+._user_background, ._header_bg {
+	opacity: 0;
+	width: 100%;
+	height: 100%;
+	color: #fff;
+	cursor: pointer;
+	transition: all .5s
+}
+._user_background p, ._header_bg p {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-left: -48px;
+	margin-top: -8px;
+	font-size: 13px
+}
+
+._user_background span, ._header_bg span {
+	display: block;
+	width: 30px;
+	height: 25px;
+	margin: 0 auto 10px
+}
+
+.user_header_img:hover ._header_bg {
+	opacity: 1
+}
+
+._user_background, ._header_bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgba(0, 0, 0, 0.5)
+}
+
+/* .user_container .user_header_img>a {
+	width: 100%;
+	height: 210px;
+	margin: 0 auto;
+	background-color: #ddd;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	overflow: hidden;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center center;
+}
+ */
+._user_image:hover ._user_background {
+	opacity: 1
+}
+._user_image {
+	position: relative;
+	top: 2em;
+	left: 6em;
+	margin-left: -50px;
+	border-radius: 50%;
+	box-sizing: border-box;
+	z-index: 30;
+	display: block;
+	overflow: hidden;
+	width: 120px;
+	height: 120px;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center
+}
+/* .user_img {
+	display: block;
+	box-sizing: border-box;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	background-size: cover
+} */
+
+._user_image img {
+	width: 100%
+}
+
+
+/*
+.user_box .user_header_img>a {
+	width: 100%;
+
+	margin: 0 auto;
+	background-color: #ddd;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	overflow: hidden;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center center
+}
+
+.user_box ._user_img a {
+	display: block;
+	box-sizing: border-box;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	background-size: cover
+}
+
+
+._user_img img, .user_box .user_header_img img {
+	width: 100%
+}
+
+.user_box ._user_name {
+	margin-top: 50px;
+	text-align: center;
+	font-size: 22px;
+	font-weight: bold
+}
+
+.user_box ._user_id {
+	display: inline-block
+}
+
+.user_box .grade-badge-container {
+	display: inline-block
+}
+
+
+.user_box ._setting, .user_box ._message a, .user_box .user_follow a
+	{
+	display: inline-block;
+	width: 80px;
+	height: 32px;
+	margin-left: 10px;
+	border-radius: 15px;
+	background-color: #fe7d62;
+	color: #fff;
+	font-size: 14px;
+	font-weight: normal;
+	text-align: center;
+	line-height: 32px;
+	cursor: pointer;
+	box-sizing: border-box
+}
+
+.user_box .user_follow {
+	bottom: 55px
+}
+
+.user_box ._message, .user_box ._setting {
+	bottom: 15px
+}
+
+.user_box ._point {
+	position: absolute;
+	bottom: 95px
+}
+
+.user_box ._setting, .user_box ._message, .user_box .user_follow
+	{
+	position: absolute;
+	right: 15px
+}
+
+.user_box ._message a, .user_box .user_follow a {
+	width: 120px
+}
+
+.user_box ._setting:hover, .user_box ._message a:hover,
+	.user_box .user_follow a:hover {
+	background-color: #fff;
+	color: #3a3a3a;
+	border: 0
+} */
+

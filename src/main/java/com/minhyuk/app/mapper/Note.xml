@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Note">
+
+	<select id="Note.selectNoteList" parameterType="map"  resultType="NoteVO">
+
+	WITH wt_note
+	     AS (SELECT note_seq,
+	                note.created_id,
+	                note.created_timestamp,
+	                note.last_up_id,
+	                note.last_up_timestamp,
+	                note.data_end_id,
+	                note.data_end_timestamp,
+	                send_mem_id,
+	                reci_mem_id,
+	                co_type,
+	                note_title,
+	                note_contents,
+	                mem.mem_name,
+	                mem.mem_nick,
+	                note.confirm_yn
+	         FROM   app.note note
+	                left outer join app.mem_info mem
+	                             ON note.send_mem_id = mem.mem_id)
+		SELECT *
+		FROM   wt_note
+		WHERE 1=1
+		<if test="flag == 'recNoteListTbody'">
+		AND  reci_mem_id = #{mem_id}
+		</if>
+		<if test="flag == 'sendNoteListTbody'">
+		AND  send_mem_id = #{mem_id}
+		</if>
+		       AND data_end_id IS NULL
+		ORDER  BY note_seq DESC;
+
+	</select>
+	<select id="Note.selectNote" parameterType="int"  resultType="NoteVO">
+		SELECT note_seq,
+			   note.created_timestamp,
+			   note.co_type,
+		       send_mem_id,
+		       reci_mem_id,
+		       note_title,
+		       note_contents,
+		       mem_nick
+		FROM   app.note note,
+		       app.mem_info mem
+		WHERE  note.send_mem_id = mem.mem_id
+		       AND note.data_end_id IS NULL
+		       AND note_seq = #{note_seq};
+	</select>
+
+	<insert id="Note.insertNote" parameterType="NoteVO">
+		INSERT INTO app.note
+		            (created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             data_end_id,
+		             data_end_timestamp,
+		             send_mem_id,
+		             reci_mem_id,
+		             co_type,
+		             note_title,
+		             note_contents,
+		             confirm_yn)
+		VALUES      (#{send_mem_id},
+		             current_timestamp(0),
+		             #{send_mem_id},
+		             current_timestamp(0),
+		             null,
+		             null,
+		             #{send_mem_id},
+		             #{reci_mem_id},
+		             #{co_type},
+		             #{note_title},
+		             #{note_contents},
+		             'N');
+	</insert>
+
+	<update id="Note.updateNoteConfirm" parameterType="int">
+		UPDATE app.note
+		SET confirm_yn = 'Y'
+		WHERE note_seq = #{note_seq}
+	</update>
+</mapper>

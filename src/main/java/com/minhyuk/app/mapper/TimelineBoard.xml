@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TimelineBoard">
+
+	<select id="TimelineBoard.selectCategoryList"  resultType="CategoryVO">
+		SELECT category_id, 
+		       category_name, 
+		       category_seq 
+		FROM   master.category 
+		WHERE  data_end_id IS NULL 
+		ORDER  BY category_seq 
+	</select>
+	
+	<select id="TimelineBoard.selectCategoryEx"  resultType="CategoryVO" parameterType="String">
+		SELECT category_ex
+		FROM   master.category 
+		WHERE  data_end_id IS NULL 
+		AND category_id = #{cgId}
+		LIMIT 1
+	</select>
+	<select id="TimelineBoard.selectBoardList"  resultType="BoardVO" parameterType="map">
+		
+		SELECT b.board_seq, 
+		       b.category_id, 
+		       b.created_id, 
+		       b.created_timestamp, 
+		       b.mem_nick, 
+		       b.contents, 
+		       b.board_type, 
+		       b.open_grade, 
+		       (SELECT Count(*) 
+		        FROM   app.comment c 
+		        WHERE  b.board_seq = c.board_seq 
+		               AND b.board_type = c.board_type
+		               AND c.data_end_id IS NULL) comment_count, 
+		       (SELECT Count(*) 
+		        FROM   app.like l 
+		        WHERE  b.board_seq = l.board_seq 
+		               AND b.board_type = l.board_type) like_count, 
+		       CASE 
+		         WHEN b.second BETWEEN 0 AND 60 THEN Cast(Round(b.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN b.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(b.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN b.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(b.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN b.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(b.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(b.second AS TEXT) 
+		       END                                      AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE b.created_id = m.mem_id) AS mem_pic 
+		FROM   (SELECT board_seq, 
+		               category_id, 
+		               created_id, 
+		               created_timestamp, 
+		               mem_nick, 
+		               contents, 
+		               board_type, 
+		               open_grade, 
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.board 
+		        WHERE  data_end_id IS NULL 
+		        <if test='cgId != "CG002"'>
+		      	  AND category_id != 'CG002'
+		        </if>
+		        <if test='cgId != "CG001"'>
+		        	AND category_id = #{cgId}
+		        </if>
+		        ORDER  BY board_seq DESC) b 
+		        WHERE b.created_id NOT IN 
+				( 
+			       SELECT f.friend_id 
+			       FROM   app.friend_info f 
+			       WHERE  f.mem_id = #{user_id}
+			       AND    f.block_yn = 'Y' )
+		        LIMIT 10
+					
+	</select>
+	
+	<select id="TimelineBoard.selectAppendBoardList"  resultType="BoardVO" parameterType="map">
+		
+		SELECT b.board_seq, 
+		       b.category_id, 
+		       b.created_id, 
+		       b.created_timestamp, 
+		       b.mem_nick, 
+		       b.contents, 
+		       b.board_type, 
+		       b.open_grade, 
+		       (SELECT Count(*) 
+		        FROM   app.comment c 
+		        WHERE  b.board_seq = c.board_seq 
+		               AND b.board_type = c.board_type
+		               AND c.data_end_id IS NULL) comment_count, 
+		       (SELECT Count(*) 
+		        FROM   app.like l 
+		        WHERE  b.board_seq = l.board_seq 
+		               AND b.board_type = l.board_type) like_count, 
+		       CASE 
+		         WHEN b.second BETWEEN 0 AND 60 THEN Cast(Round(b.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN b.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(b.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN b.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(b.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN b.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(b.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(b.second AS TEXT) 
+		       END                                      AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE b.created_id = m.mem_id) AS mem_pic 
+		FROM   (SELECT board_seq, 
+		               category_id, 
+		               created_id, 
+		               created_timestamp, 
+		               mem_nick, 
+		               contents, 
+		               board_type, 
+		               open_grade, 
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.board 
+		        WHERE  data_end_id IS NULL 
+		        <if test='cgId != "CG002"'>
+		      	  AND category_id != 'CG002'
+		        </if>
+		        <if test='cgId != "CG001"'>
+		        	AND category_id = #{cgId}
+		        </if>
+		        <![CDATA[
+		       	 AND board_seq < #{boardSeq}
+		        ]]>
+		        ORDER  BY board_seq DESC) b 
+		        WHERE b.created_id NOT IN 
+				( 
+			       SELECT f.friend_id 
+			       FROM   app.friend_info f 
+			       WHERE  f.mem_id = #{user_id}
+			       AND    f.block_yn = 'Y' )
+		        LIMIT 10
+					
+	</select>
+	
+	<select id="TimelineBoard.selectMypageBoardList"  resultType="BoardVO" parameterType="map">
+		
+		SELECT b.board_seq, 
+		       b.category_id, 
+		       b.created_id, 
+		       b.created_timestamp, 
+		       b.mem_nick, 
+		       b.contents, 
+		       b.board_type, 
+		       b.open_grade, 
+		       (SELECT Count(*) 
+		        FROM   app.comment c 
+		        WHERE  b.board_seq = c.board_seq 
+		               AND b.board_type = c.board_type
+		               AND c.data_end_id IS NULL) comment_count, 
+		       (SELECT Count(*) 
+		        FROM   app.like l 
+		        WHERE  b.board_seq = l.board_seq 
+		               AND b.board_type = l.board_type) like_count, 
+		       CASE 
+		         WHEN b.second BETWEEN 0 AND 60 THEN Cast(Round(b.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN b.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(b.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN b.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(b.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN b.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(b.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(b.second AS TEXT) 
+		       END                                      AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE b.created_id = m.mem_id) AS mem_pic 
+		FROM   (SELECT board_seq, 
+		               category_id, 
+		               created_id, 
+		               created_timestamp, 
+		               mem_nick, 
+		               contents, 
+		               board_type, 
+		               open_grade, 
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.board 
+		        WHERE  data_end_id IS NULL 
+		        AND created_id = #{user_id}
+		        <if test='identity != "Y"'>
+		      	   AND open_grade != 'N'
+		        </if>
+		        ORDER  BY board_seq DESC) b 
+		        LIMIT 10
+					
+	</select>
+	
+	<select id="TimelineBoard.selectMypageAppendBoardList"  resultType="BoardVO" parameterType="map">
+		
+		SELECT b.board_seq, 
+		       b.category_id, 
+		       b.created_id, 
+		       b.created_timestamp, 
+		       b.mem_nick, 
+		       b.contents, 
+		       b.board_type, 
+		       b.open_grade, 
+		       (SELECT Count(*) 
+		        FROM   app.comment c 
+		        WHERE  b.board_seq = c.board_seq 
+		               AND b.board_type = c.board_type
+		               AND c.data_end_id IS NULL) comment_count, 
+		       (SELECT Count(*) 
+		        FROM   app.like l 
+		        WHERE  b.board_seq = l.board_seq 
+		               AND b.board_type = l.board_type) like_count, 
+		       CASE 
+		         WHEN b.second BETWEEN 0 AND 60 THEN Cast(Round(b.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN b.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(b.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN b.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(b.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN b.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(b.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(b.second AS TEXT) 
+		       END                                      AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE b.created_id = m.mem_id) AS mem_pic 
+		FROM   (SELECT board_seq, 
+		               category_id, 
+		               created_id, 
+		               created_timestamp, 
+		               mem_nick, 
+		               contents, 
+		               board_type, 
+		               open_grade, 
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.board 
+		        WHERE  data_end_id IS NULL 
+		        AND created_id = #{user_id}
+		       <if test='identity != "Y"'>
+		      	   AND open_grade != 'N'
+		        </if>
+		        <![CDATA[
+		       	 AND board_seq < #{boardSeq}
+		        ]]>
+		        ORDER  BY board_seq DESC) b 
+		        LIMIT 10
+					
+	</select>
+	
+	<select id="TimelineBoard.selectBoardNotice"  resultType="BoardVO">
+		SELECT b.board_seq, 
+		       b.category_id, 
+		       b.created_id, 
+		       b.created_timestamp, 
+		       b.mem_nick, 
+		       b.contents, 
+		       b.board_type, 
+		       (SELECT Count(*) 
+		        FROM   app.comment c 
+		        WHERE  b.board_seq = c.board_seq 
+		               AND b.board_type = c.board_type
+		               AND c.data_end_id IS NULL) comment_count, 
+		       (SELECT Count(*) 
+		        FROM   app.like l 
+		        WHERE  b.board_seq = l.board_seq 
+		               AND b.board_type = l.board_type) like_count
+		FROM   app.board b 
+		WHERE  data_end_id IS NULL 
+		       AND category_id = 'CG002' 
+		ORDER  BY board_seq DESC 
+		LIMIT  1 
+	</select>
+	
+	<select id="TimelineBoard.selectBoardContents"  resultType="BoardVO" parameterType="int">
+		SELECT b.board_seq, 
+		       b.category_id, 
+		       b.created_id, 
+		       b.created_timestamp, 
+		       b.mem_nick, 
+		       b.contents, 
+		       b.board_type, 
+		       (SELECT Count(*) 
+		        FROM   app.comment c 
+		        WHERE  b.board_seq = c.board_seq 
+		               AND b.board_type = c.board_type
+		               AND c.data_end_id IS NULL) comment_count, 
+		       (SELECT Count(*) 
+		        FROM   app.like l 
+		        WHERE  b.board_seq = l.board_seq 
+		               AND b.board_type = l.board_type) like_count, 
+		       CASE 
+		         WHEN b.second BETWEEN 0 AND 60 THEN Cast(Round(b.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN b.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(b.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN b.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(b.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN b.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(b.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(b.second AS TEXT) 
+		       END                                      AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE b.created_id = m.mem_id) AS mem_pic  
+		FROM   (SELECT board_seq, 
+		               category_id, 
+		               created_id, 
+		               created_timestamp, 
+		               mem_nick, 
+		               contents, 
+		               board_type, 
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.board 
+		        WHERE  board_seq = #{board_seq}) b 
+	</select>
+	
+	<select id="TimelineBoard.selectBoardCommentList" parameterType="map" resultType="CommentVO">
+		SELECT c.comment_seq, 
+		       c.board_seq, 
+		       c.anony_yn, 
+		       c.board_type, 
+		       c.contents, 
+		       c.mem_nick, 
+		       c.created_id,
+		       c.created_timestamp, 
+		       c.parent_comment_seq,
+		       CASE 
+		         WHEN c.second BETWEEN 0 AND 60 THEN Cast(Round(c.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN c.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(c.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN c.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(c.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN c.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(c.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(c.second AS TEXT) 
+		       END AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE c.created_id = m.mem_id) AS mem_pic 
+		FROM   (SELECT comment_seq, 
+		               board_seq, 
+		               anony_yn, 
+		               board_type, 
+		               contents, 
+		               mem_nick, 
+		               created_id,
+		               created_timestamp, 
+		               parent_comment_seq,
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.comment 
+		        WHERE  1 = 1 
+		               AND board_type = 'T' 
+		               AND board_seq = #{board_seq} 
+		               AND data_end_id IS NULL
+		               AND parent_comment_seq IS NULL) c 
+		               WHERE c.created_id NOT IN 
+				( 
+			       SELECT f.friend_id 
+			       FROM   app.friend_info f 
+			       WHERE  f.mem_id = #{user_id}
+			       AND    f.block_yn = 'Y' )
+		ORDER  BY comment_seq; 
+	</select>
+	
+	
+	<select id="TimelineBoard.selectBoardCommentList2" parameterType="map" resultType="CommentVO">
+		SELECT c.comment_seq, 
+		       c.board_seq, 
+		       c.anony_yn, 
+		       c.board_type, 
+		       c.contents, 
+		       c.mem_nick, 
+		       c.created_id, 
+		       c.created_timestamp, 
+		       c.parent_comment_seq,
+		       CASE 
+		         WHEN c.second BETWEEN 0 AND 60 THEN Cast(Round(c.second) AS TEXT) 
+		                                             || '초 전' 
+		         WHEN c.second BETWEEN 60 AND 3600 THEN Cast( 
+		         Round(c.second / 60) AS TEXT) 
+		                                                || '분 전' 
+		         WHEN c.second BETWEEN 3600 AND 86400 THEN Cast( 
+		         Round(c.second / 3600) AS TEXT) 
+		                                                   || '시간 전' 
+		         WHEN c.second BETWEEN 86400 AND 604800 THEN Cast( 
+		         Round(c.second / 86400) AS TEXT) 
+		                                                     || '일 전' 
+		         ELSE Cast(c.second AS TEXT) 
+		       END AS up_time,
+			(SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE c.created_id = m.mem_id) AS mem_pic  
+		FROM   (SELECT comment_seq, 
+		               board_seq, 
+		               anony_yn, 
+		               board_type, 
+		               contents, 
+		               mem_nick, 
+		               created_id,
+		               created_timestamp, 
+		               parent_comment_seq,
+		               Extract(day FROM CURRENT_TIMESTAMP - created_timestamp) * 24 * 60 
+		               * 60 + 
+		               Extract 
+		               (hour FROM CURRENT_TIMESTAMP - created_timestamp) * 60 * 60 + 
+		               Extract(minute FROM CURRENT_TIMESTAMP - created_timestamp) * 60 + 
+		               Extract(second FROM CURRENT_TIMESTAMP - created_timestamp) AS 
+		               second 
+		        FROM   app.comment 
+		        WHERE  1 = 1 
+		               AND board_type = 'T' 
+   		      	<if test="list != null">
+		               AND parent_comment_seq IN 
+    		   <foreach collection="list" item="item"  open="(" close=")" separator=",">	               
+          			  #{item}		               
+		       </foreach>
+		         </if>
+		               AND data_end_id IS NULL) c 
+		               WHERE c.created_id NOT IN 
+				( 
+			       SELECT f.friend_id 
+			       FROM   app.friend_info f 
+			       WHERE  f.mem_id = #{user_id}
+			       AND    f.block_yn = 'Y' )
+		ORDER  BY comment_seq 		
+	</select>
+	
+	<select id="TimelineBoard.selectCheckLike" parameterType="LikeVO" resultType="int">
+		<![CDATA[
+		SELECT Count(*)
+		FROM   app.like
+		WHERE  board_seq = #{board_seq}
+		       AND mem_id = #{mem_id}
+		       AND board_type = 'T'
+		]]>
+	</select>
+	
+	<select id="TimelineBoard.selectModifyComment"  parameterType="int"  resultType="CommentVO">
+		SELECT comment_seq, 
+		       board_seq, 
+		       created_id, 
+		       created_timestamp, 
+		       last_up_id, 
+		       last_up_timestamp, 
+		       board_type, 
+		       contents, 
+		       mem_nick, 
+		       parent_comment_seq 
+		FROM   app.comment 
+		WHERE  comment_seq = #{comment_seq}
+		       AND board_type = 'T' 
+	</select>
+	
+	<select id="TimelineBoard.checkParentComment"  parameterType="CommentVO"  resultType="int">
+		SELECT COALESCE(B.parent_comment_seq, 0) AS parent_comment_seq 
+		FROM   (SELECT '${board_type}' AS board_type, 
+		               0   AS parent_comment_seq) A 
+		       LEFT OUTER JOIN (SELECT parent_comment_seq, 
+		                               board_type 
+		                        FROM   app.comment 
+		                        WHERE  comment_seq = #{parent_comment_seq} 
+		                               AND board_type = #{board_type} 
+		                               AND data_end_id IS NULL 
+		                               AND parent_comment_seq IS NOT NULL) B 
+		                    ON( A.board_type = B.board_type ); 
+	</select>
+	
+	<select id="TimelineBoard.selectTimeLineLikePopupList"  parameterType="map"  resultType="LikeVO">
+		SELECT l.board_seq, 
+		       l.mem_id, 
+		       l.board_type, 
+		       m.mem_nick, 
+		       m.mem_pic, 
+		       l.created_timestamp 
+		FROM   app.like l 
+		       JOIN app.mem_info m 
+		         ON l.mem_id = m.mem_id 
+		WHERE  l.board_seq = #{board_seq}
+		       AND l.board_type = #{board_type} 
+		ORDER  BY l.created_timestamp 
+	</select>
+	
+	
+	<insert id="TimelineBoard.insertTimeline" parameterType="BoardVO">
+		<![CDATA[
+		INSERT INTO app.board 
+		            (category_id, 
+		             created_id, 
+		             created_timestamp, 
+		             last_up_id, 
+		             last_up_timestamp, 
+		             mem_nick, 
+		             contents, 
+		             anony_yn, 
+		             open_grade, 
+		             board_type) 
+		VALUES      ( #{category_id}, 
+		              #{created_id}, 
+		              CURRENT_TIMESTAMP(0), 
+		              #{last_up_id}, 
+		              CURRENT_TIMESTAMP(0), 
+		              #{mem_nick}, 
+		              #{contents}, 
+		              #{anony_yn}, 
+		              #{open_grade}, 
+		              #{board_type}) 
+         ]]>
+	</insert>	
+	
+	<insert id="TimelineBoard.insertLike" parameterType="LikeVO">
+		<![CDATA[
+		INSERT INTO app.like
+		            (board_seq,
+		             mem_id,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             board_type)
+		VALUES      (#{board_seq},
+		             #{mem_id},
+		             #{created_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{last_up_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{board_type});
+		]]>
+	</insert>
+	
+	<insert id="TimelineBoard.insertComment" parameterType="CommentVO">
+		<![CDATA[
+		INSERT INTO app.comment
+		            (board_seq,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             anony_yn,
+		             board_type,
+		             contents,
+		             mem_nick)
+		VALUES      (#{board_seq},
+		             #{created_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{last_up_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{anony_yn},
+		             #{board_type},
+		             #{contents},
+		             #{mem_nick})
+		]]>
+	</insert>
+	
+	<update id="TimelineBoard.deletePost" parameterType="map">
+		UPDATE app.board 
+		SET    last_up_id = #{mem_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       data_end_id = #{mem_id}, 
+       data_end_timestamp = CURRENT_TIMESTAMP(0) 
+		WHERE  board_seq = #{board_seq} 
+	</update>
+	
+	<update id="TimelineBoard.updatePost" parameterType="map">
+		UPDATE app.board 
+		SET    last_up_id = #{mem_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       contents = #{contents}
+		WHERE  board_seq = #{board_seq} 
+	</update>
+	
+	<update id="TimelineBoard.deleteComment" parameterType="map">
+		UPDATE app.comment
+		SET    last_up_id = #{mem_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       data_end_id = #{mem_id}, 
+       data_end_timestamp = CURRENT_TIMESTAMP(0) 
+		WHERE  comment_seq = #{comment_seq} 
+		AND board_type = #{board_type}
+	</update>
+	
+	<update id="TimelineBoard.modifyComment" parameterType="CommentVO">
+		UPDATE app.comment
+		SET    last_up_id = #{last_up_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       contents = #{contents}
+		WHERE  comment_seq = #{comment_seq} 
+		AND board_type = #{board_type}
+	</update>
+	
+	<insert id="TimelineBoard.insertRecomment" parameterType="CommentVO">
+		<![CDATA[
+		INSERT INTO app.comment
+		            (board_seq,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             anony_yn,
+		             board_type,
+		             contents,
+		             mem_nick,
+		             parent_comment_seq)
+		VALUES      (#{board_seq},
+		             #{created_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{last_up_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{anony_yn},
+		             #{board_type},
+		             #{contents},
+		             #{mem_nick},
+		             #{parent_comment_seq})
+		]]>
+	</insert>
+	
+</mapper>

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="IssueBoard">
+
+	<select id="IssueBoard.selectTitleList"  resultType="IssueBoardVO" >
+		SELECT issue_board_seq,
+		       title,
+		       mem_nick,
+		       created_timestamp 
+		FROM   app.issue_board
+		WHERE  1 = 1
+		       AND data_end_id IS NULL
+		ORDER  BY issue_board_seq DESC
+	</select>
+	<select id="IssueBoard.selectIssueContents" parameterType="int" resultType="IssueBoardVO">
+		SELECT issue_board_seq,
+		       mem_nick,
+		       title,
+		       created_timestamp,
+		       CONTENTS,
+		       board_type
+		FROM   app.issue_board
+		WHERE  1 = 1
+		       AND issue_board_seq = #{seq}
+	</select>
+
+	<select id="IssueBoard.selectIssueCommentList" parameterType="int" resultType="CommentVO">
+		SELECT comment_seq,
+		       board_seq,
+		       anony_yn,
+		       board_type,
+		       CONTENTS,
+		       mem_nick,
+		       created_id,
+		       created_timestamp,
+		       parent_comment_seq,
+		       (SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE c.created_id = m.mem_id) AS mem_pic 
+		FROM   app.COMMENT c
+		WHERE  1 = 1
+		       AND board_type = 'I'
+		       AND board_seq = #{seq}
+		       AND data_end_id IS NULL
+		       AND parent_comment_seq IS NULL
+		ORDER  BY comment_seq
+	</select>
+
+	<select id="IssueBoard.selectIssuePreSeq" parameterType="int" resultType="int">
+		<![CDATA[
+		SELECT Coalesce(B.issue_board_seq, 0) AS issue_board_seq
+		FROM   (SELECT 'I' AS board_type,
+		               0   AS issue_board_seq) A
+		       LEFT OUTER JOIN (SELECT issue_board_seq,
+		                               board_type
+		                        FROM   app.issue_board
+		                        WHERE  issue_board_seq < #{seq}
+		                               AND data_end_id IS NULL
+		                        ORDER  BY issue_board_seq DESC) B
+		                    ON ( A.board_type = B.board_type )
+		LIMIT  1
+		]]>
+	</select>
+
+	<select id="IssueBoard.selectIssueNextSeq" parameterType="int" resultType="int">
+		<![CDATA[
+		SELECT Coalesce(B.issue_board_seq, 0) AS issue_board_seq
+		FROM   (SELECT 'I' AS board_type,
+		               0   AS issue_board_seq) A
+		       LEFT OUTER JOIN (SELECT issue_board_seq,
+		                               board_type
+		                        FROM   app.issue_board
+		                        WHERE  issue_board_seq > #{seq}
+		                               AND data_end_id IS NULL
+		                        ORDER  BY issue_board_seq) B
+		                    ON ( A.board_type = B.board_type )
+		LIMIT  1
+		]]>
+	</select>
+
+	<select id="IssueBoard.selectLikeList" parameterType="int" resultType="LikeVO">
+		<![CDATA[
+		SELECT board_seq,
+		       mem_id,
+		       board_type
+		FROM   app.like
+		WHERE  board_seq = #{seq}
+		]]>
+	</select>
+
+	<select id="IssueBoard.selectIssueCommentList2" parameterType="java.util.List" resultType="CommentVO">
+		SELECT comment_seq,
+		       board_seq,
+		       anony_yn,
+		       board_type,
+		       CONTENTS,
+		       mem_nick,
+		       created_id,
+		       created_timestamp,
+		       parent_comment_seq,
+		       (SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE c.created_id = m.mem_id) AS mem_pic 
+		FROM   app.COMMENT c
+		WHERE  1 = 1
+		       AND board_type = 'I'
+
+		       <if test="list != null">
+       AND parent_comment_seq IN
+       <foreach collection="list" item="comment_seq"  open="(" close=")" separator=",">
+            #{comment_seq.value}
+       </foreach>
+         </if>
+		       AND data_end_id IS NULL
+		ORDER  BY comment_seq
+	</select>
+
+
+	<select id="IssueBoard.selectCheckLike" parameterType="LikeVO" resultType="int">
+		<![CDATA[
+		SELECT Count(*)
+		FROM   app.like
+		WHERE  board_seq = #{board_seq}
+		       AND mem_id = #{mem_id}
+		       AND board_type = 'I'
+		]]>
+	</select>
+
+	<select id="IssueBoard.selectModifyComment"  parameterType="int"  resultType="CommentVO">
+		SELECT comment_seq, 
+		       board_seq, 
+		       created_id, 
+		       created_timestamp, 
+		       last_up_id, 
+		       last_up_timestamp, 
+		       board_type, 
+		       contents, 
+		       mem_nick, 
+		       parent_comment_seq,
+		       (SELECT mem_pic 
+			FROM app.mem_info m 
+			WHERE c.created_id = m.mem_id) AS mem_pic 
+		FROM   app.comment c
+		WHERE  comment_seq = #{comment_seq}
+		       AND board_type = 'I' 
+	</select>	
+
+	<insert id="IssueBoard.insertIssue" parameterType="IssueBoardVO">
+		<![CDATA[
+		INSERT INTO app.issue_board
+		            (created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             mem_nick,
+		             title,
+		             contents,
+		             board_type)
+		VALUES      ( #{created_id},
+		              CURRENT_TIMESTAMP(0),
+		              #{last_up_id},
+		              CURRENT_TIMESTAMP(0),
+		              #{mem_nick},
+		              #{title},
+		              #{contents},
+		              'I' )
+         ]]>
+	</insert>
+
+	<insert id="IssueBoard.insertComment" parameterType="CommentVO">
+		<![CDATA[
+		INSERT INTO app.comment
+		            (board_seq,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             anony_yn,
+		             board_type,
+		             contents,
+		             mem_nick)
+		VALUES      (#{board_seq},
+		             #{created_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{last_up_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{anony_yn},
+		             #{board_type},
+		             #{contents},
+		             #{mem_nick})
+		]]>
+	</insert>
+
+
+	<insert id="IssueBoard.insertLike" parameterType="LikeVO">
+		<![CDATA[
+		INSERT INTO app.like
+		            (board_seq,
+		             mem_id,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             board_type)
+		VALUES      (#{board_seq},
+		             #{mem_id},
+		             #{created_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{last_up_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{board_type});
+		]]>
+	</insert>
+
+	<update id="IssueBoard.deleteIssueContents" parameterType="map">
+		UPDATE app.issue_board 
+		SET    last_up_id = #{mem_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       data_end_id = #{mem_id}, 
+       data_end_timestamp = CURRENT_TIMESTAMP(0) 
+		WHERE  issue_board_seq = #{board_seq} 
+	</update>
+	
+	<update id="IssueBoard.modifyIssue" parameterType="IssueBoardVO">
+		<![CDATA[
+		UPDATE app.issue_board 
+		SET    last_up_id = #{last_up_id}, 
+		       last_up_timestamp = CURRENT_TIMESTAMP(0), 
+		       mem_nick = #{mem_nick}, 
+		       title = #{title}, 
+		       contents = #{contents} 
+		WHERE  issue_board_seq = #{issue_board_seq} 
+         ]]>
+	</update>
+	
+	<update id="IssueBoard.deleteComment" parameterType="map">
+		UPDATE app.comment
+		SET    last_up_id = #{mem_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       data_end_id = #{mem_id}, 
+       data_end_timestamp = CURRENT_TIMESTAMP(0) 
+		WHERE  comment_seq = #{comment_seq} 
+		AND board_type = #{board_type}
+	</update>
+	
+	<update id="IssueBoard.modifyComment" parameterType="CommentVO">
+		UPDATE app.comment
+		SET    last_up_id = #{last_up_id}, 
+       last_up_timestamp = CURRENT_TIMESTAMP(0),
+       contents = #{contents}
+		WHERE  comment_seq = #{comment_seq} 
+		AND board_type = #{board_type}
+	</update>
+
+	<insert id="IssueBoard.insertRecomment" parameterType="CommentVO">
+		<![CDATA[
+		INSERT INTO app.comment
+		            (board_seq,
+		             created_id,
+		             created_timestamp,
+		             last_up_id,
+		             last_up_timestamp,
+		             anony_yn,
+		             board_type,
+		             contents,
+		             mem_nick,
+		             parent_comment_seq)
+		VALUES      (#{board_seq},
+		             #{created_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{last_up_id},
+		             CURRENT_TIMESTAMP(0),
+		             #{anony_yn},
+		             #{board_type},
+		             #{contents},
+		             #{mem_nick},
+		             #{parent_comment_seq})
+		]]>
+	</insert>
+</mapper>

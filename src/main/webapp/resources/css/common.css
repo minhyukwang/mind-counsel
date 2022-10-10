@@ -1,0 +1,154 @@
+@charset "UTF-8";
+
+.bodyPart{
+	position:relative;
+	top:80px;
+	font-family: PT Sans, sans-serif;
+}
+.sidebar{
+	position:relative;
+	left:3em;
+	border-right:solid 0.8px #dee2e6;
+	font-family: 'Stylish', sans-serif;
+	font-size: 1.1em;
+
+}
+.self-check-btn{
+	display: block;
+	width: 70px;
+/* 	height: 36px;
+ 	margin-top: 15px; */
+	background-color: #636363;
+	color: #fff;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 14px;
+	height: 2.3em;
+	position:relative;
+	left:6em;
+
+}
+.self-check-re-btn{
+	display: block;
+	width: 150px;
+/* 	height: 36px;
+ 	margin-top: 15px; */
+	background-color: #636363;
+	color: #fff;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 14px;
+	height: 2.3em;
+	position:relative;
+	left:6em;
+
+}
+.greate-vibe
+{
+	font-family: 'Dancing Script', cursive;
+	font-family: 'Great Vibes', cursive;
+}
+
+.title-part
+{
+	font-family: 'Stylish', sans-serif;
+	font-size: 1.3em;
+}
+
+.blog-intro
+{
+	border: 1px solid #dee2e6;
+	width: 100%;
+	height: 100px;
+}
+
+.blog-intro-image
+{
+	/* border: 1px solid #dee2e6; */
+	width: 100%;
+	height: 345px;
+	padding: 1px 1px 1px 1px;
+}
+
+.blog-post-check
+{
+	position: relative;
+}
+
+.blog-post-check-btn
+{
+	position: absolute;
+	width: 80%;
+	height: 200px;
+}
+/* Table 관련 css 모음 */
+.table-issue {
+	/* border: 1px solid #dee2e6 */
+}
+
+.table-base th
+{
+	border:0.8px;
+ 	border-bottom: solid #dee2e6
+}
+.table-base td
+{
+	border:0.8px;
+ 	border-bottom: solid #dee2e6
+}
+
+.table-content-left{
+	text-align:left;
+	padding:5px;
+}
+
+.issue-table-content-left{
+	text-align:left;
+	padding:5px;
+}
+
+a:LINK, a:VISITED {
+        text-decoration: none; color: black;
+}
+
+a:HOVER {     /* 마우스 커서 올렸을때 */
+        text-decoration: underline;  font-weight: bold; cursor:pointer;
+}
+
+a:ACTIVE {    /* 마우스 버튼을 눌렀을때 */
+        text-decoration: none; color: black;
+}
+
+
+.a-base{
+	cursor:pointer;
+	color:black;
+}
+
+/* .noresize-view
+{
+	resize: none; 사용자 임의 변경 불가
+	min-height: 50px;
+	overflow:hidden;
+} */
+
+.table-body-comment tr td
+{
+	text-align:left;
+}
+radio
+{
+	display:inline-block;
+}
+
+textarea::placeholder {
+  color: gray;
+}
+input::placeholder {
+  color: gray;
+}
+span::placeholder {
+  color: gray;
+}
